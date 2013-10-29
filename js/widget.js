@@ -3,6 +3,19 @@
   © 2013 Michael Hart / Awesome New Tab Page
 */
 
+var app = angular.module('BookmarksWidget', []);
+
+app.directive('ngRightClick', function($parse) {
+    return function(scope, element, attrs) {
+        var fn = $parse(attrs.ngRightClick);
+        element.bind('contextmenu', function(event) {
+            scope.$apply(function() {
+                fn(scope, {$event:event});
+            });
+        });
+    };
+});
+
 function viewCtrl($scope) {
 
   $scope.tree = null;
@@ -85,8 +98,20 @@ function viewCtrl($scope) {
   $scope.crumbHeight = function() {
     $("#bookmarks").css("padding-top", $("#crumbs").height());
   };
+
+  $scope.setCurrent = function(selectionId, isFolder) {
+
+    chrome.extension.sendMessage({type: "setBookmarkSelection", id: selectionId, isSelectedFolder: isFolder});
+  }
+
   $(window).bind("resize", $scope.crumbHeight);
   chrome.extension.sendMessage({type: "bookmarkTree"}, $scope.loadFavorite);
+
+  chrome.extension.onMessage.addListener(function(message) {
+    if(message.type === "RefreshBookmarks") {
+      chrome.extension.sendMessage({type: "bookmarkTree"}, $scope.update);
+    }
+  });
 }
 
 function removeElements(array, index) {
@@ -114,3 +139,5 @@ function get_guid() {
   }
 }
 GUID = get_guid();
+
+
