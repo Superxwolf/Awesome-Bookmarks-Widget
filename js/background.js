@@ -36,5 +36,68 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
 
+  if ( request.type === "deleteBookmark" ) {
+    chrome.bookmarks.remove(request.id);
+  }
+
+  if (request.type === "deleteBookmarkFolder") {
+    chrome.bookmarks.removeTree(request.id);
+  }
+
+  if ( request.type === "setBookmarkSelection") {
+    localStorage['selectionId'] = request.id;
+    localStorage['isSelectedFolder'] = request.isSelectedFolder;
+  }
+
   return true;
 });
+
+function onContextClicked(info, tab)
+{
+  if(info.menuItemId === "BookmarkContextDelete") {
+    if(localStorage['isSelectedFolder']) {
+      chrome.bookmarks.removeTree(localStorage['selectionId']);
+    }
+    else {
+      chrome.bookmarks.remove(localStorage['selectionId']);
+    }
+  }
+}
+
+function createContextMenu()
+{
+  //Get the current extension id
+  var extensionId = chrome.i18n.getMessage("@@extension_id");
+
+  ///////////////////////////       Initial Separator
+  var contextMenu = {
+    id: "BookmarkContextInitialSeperator",
+    type: "separator",
+    //Makes the context menu appear only on right click within a frame using this extension
+    documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
+  }
+  chrome.contextMenus.create(contextMenu);
+
+  ///////////////////////////       Delete
+  contextMenu = {
+    id: "BookmarkContextDelete",
+    title: "Delete",
+    contexts: ["link"],
+    //Makes the context menu appear only on right click within a frame using this extension
+    documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
+  }
+  chrome.contextMenus.create(contextMenu);
+
+  ///////////////////////////       End Separator
+  contextMenu = {
+    id: "BookmarkContextEndSeperator",
+    type: "separator",
+    //Makes the context menu appear only on right click within a frame using this extension
+    documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
+  }
+  chrome.contextMenus.create(contextMenu);
+
+  chrome.contextMenus.onClicked.addListener(onContextClicked);
+}
+
+createContextMenu();
