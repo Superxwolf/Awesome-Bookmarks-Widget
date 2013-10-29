@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app ng-csp>
+<html ng-app="BookmarksWidget" ng-csp>
   <head>
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/angular.min.js"></script>
@@ -11,11 +11,11 @@
     <div id="bookmarks">
       <div ng-repeat="bookmark in view" class="bkmrk-item">
         <a href="{{ bookmark.url || '#' }}" target="{{ bookmark.url && '_top' || ''}}">
-          <div ng-show="$eval('bookmark.children.length >= 0')" ng-click="changeView(bookmark.index)" class="bkmrk-title">
+          <div ng-show="$eval('bookmark.children.length >= 0')" ng-click="changeView(bookmark.index)" ng-right-click="setCurrent(bookmark.id, true)" class="bkmrk-title">
             <img src="/img/folder.png" class="bkmrk-icon" />
             {{ bookmark.title }}
           </div>
-          <div ng-hide="$eval('bookmark.children.length >= 0')" class="bkmrk-title">
+          <div ng-hide="$eval('bookmark.children.length >= 0')" ng-right-click="setCurrent(bookmark.id, false)" class="bkmrk-title">
             <img ng-src="https://www.google.com/s2/u/0/favicons?domain={{$eval('getHostname(bookmark.url)')}}" class="bkmrk-icon" />
             {{ bookmark.title }}
           </div>
