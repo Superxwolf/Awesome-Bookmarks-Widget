@@ -36,14 +36,6 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
     });
   }
 
-  if ( request.type === "deleteBookmark" ) {
-    chrome.bookmarks.remove(request.id);
-  }
-
-  if (request.type === "deleteBookmarkFolder") {
-    chrome.bookmarks.removeTree(request.id);
-  }
-
   if ( request.type === "setBookmarkSelection") {
     localStorage['selectionId'] = request.id;
     localStorage['isSelectedFolder'] = request.isSelectedFolder;
