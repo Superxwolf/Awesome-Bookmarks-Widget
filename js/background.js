@@ -54,6 +54,8 @@ function onContextClicked(info, tab)
       chrome.bookmarks.remove(localStorage['selectionId']);
     }
   }
+
+  chrome.tabs.sendMessage(tab.id, {type: "RefreshBookmarks"});
 }
 
 function createContextMenu()
