@@ -45,17 +45,22 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function onContextClicked(info, tab)
-{
+{ 
   if(info.menuItemId === "BookmarkContextDelete") {
-    if(localStorage['isSelectedFolder']) {
-      chrome.bookmarks.removeTree(localStorage['selectionId']);
-    }
-    else {
-      chrome.bookmarks.remove(localStorage['selectionId']);
-    }
+    deleteBookmark(localStorage['selectionId'], localStorage['isSelectedFolder']);
   }
 
   chrome.tabs.sendMessage(tab.id, {type: "RefreshBookmarks"});
+}
+
+function deleteBookmark(id, isSelectedFolder)
+{
+  if(isSelectedFolder) {
+      chrome.bookmarks.removeTree(id);
+    }
+    else {
+      chrome.bookmarks.remove(id);
+    }
 }
 
 function createContextMenu()
@@ -63,35 +68,30 @@ function createContextMenu()
   //Get the current extension id
   var extensionId = chrome.i18n.getMessage("@@extension_id");
 
-  ///////////////////////////       Initial Separator
-  var contextMenu = {
-    id: "BookmarkContextInitialSeperator",
-    type: "separator",
-    //Makes the context menu appear only on right click within a frame using this extension
-    documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
-  }
-  chrome.contextMenus.create(contextMenu);
-
   ///////////////////////////       Delete
   contextMenu = {
     id: "BookmarkContextDelete",
     title: "Delete",
     contexts: ["link"],
+    
     //Makes the context menu appear only on right click within a frame using this extension
     documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
-  }
+  };
   chrome.contextMenus.create(contextMenu);
 
-  ///////////////////////////       End Separator
-  contextMenu = {
-    id: "BookmarkContextEndSeperator",
-    type: "separator",
-    //Makes the context menu appear only on right click within a frame using this extension
-    documentUrlPatterns: ["chrome-extension://" + extensionId + "/*"] 
-  }
-  chrome.contextMenus.create(contextMenu);
+}
 
-  chrome.contextMenus.onClicked.addListener(onContextClicked);
+function onTabHighlighted(info)
+{
+  function onTabGet(tab)
+  {
+    if(tab.status === "complete" && tab.url === "chrome://newtab/")
+    {
+      chrome.tabs.sendMessage(tab.id, {type: "RefreshBookmarks"});
+    }
+  }
+  chrome.tabs.get(info.tabIds[0], onTabGet);
 }
 
 createContextMenu();
+chrome.tabs.onHighlighted.addListener(onTabHighlighted);
